@@ -1,30 +1,20 @@
 import os
 
-from isort import SortImports
+from isort import code, settings
 from pyls import hookimpl
 
 
 def sort(document, override=None):
     source = override or document.source
-    sorted_source = SortImports(
-        file_contents=source,
-        settings_path=os.path.dirname(os.path.abspath(document.path))
-    ).output
+    isort_config = settings.Config(settings_path=os.path.dirname(document.path))
+    sorted_source = code(source, config=isort_config)
     if source == sorted_source:
         return
-    return [{
-        'range': {
-            'start': {
-                'line': 0,
-                'character': 0
-            },
-            'end': {
-                'line': len(document.lines),
-                'character': 0
-            }
-        },
-        'newText': sorted_source
-    }]
+    change_range = {
+        "start": {"line": 0, "character": 0},
+        "end": {"line": len(document.lines), "character": 0},
+    }
+    return [{"range": change_range, "newText": sorted_source}]
 
 
 @hookimpl(hookwrapper=True)
@@ -32,7 +22,7 @@ def pyls_format_document(document):
     outcome = yield
     results = outcome.get_result()
     if results:
-        newResults = sort(document, results[0]['newText'])
+        newResults = sort(document, results[0]["newText"])
     else:
         newResults = sort(document)
 
@@ -45,7 +35,7 @@ def pyls_format_range(document, range):
     outcome = yield
     results = outcome.get_result()
     if results:
-        newResults = sort(document, results[0]['newText'])
+        newResults = sort(document, results[0]["newText"])
     else:
         newResults = sort(document)
 

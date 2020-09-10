@@ -21,7 +21,7 @@ setup(
     platforms="Any",
     packages=find_packages(),
     provides=['pyls_isort'],
-    install_requires=['python-language-server', 'isort'],
+    install_requires=['python-language-server', 'isort>=5.0.0'],
     entry_points={
         'pyls': ['pyls_isort = pyls_isort.plugin'],
     },
